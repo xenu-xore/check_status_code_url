@@ -14,14 +14,18 @@ SITEMAP = 'https://www.google.com/admob/sitemap.xml'
 
 
 class Crawl(object):
-    def data(self):
+
+    def __init__(self, sitemap):
+        self.sitemap = sitemap
+
+    def fetch_urls(self):
         """Сбор URL из sitemap для дальнейшего обхода в behavior(data_urls)"""
         try:
-            c = requests.get(SITEMAP, allow_redirects=True, headers=HEADERS, timeout=1)
+            c = requests.get(self.sitemap, allow_redirects=True, headers=HEADERS, timeout=1)
             soup = bs4.BeautifulSoup(c.content, 'html.parser')
             list_urls_s = [i.get_text() for i in soup.find_all('loc')]
-            print(list_urls_s)
             return list_urls_s
+
         except Exception as e:
             return e
 
@@ -30,6 +34,7 @@ class Crawl(object):
             #   list_urls_s = [i.get_text() for i in soup.find_all('loc')]
             #   return list_urls_s
 
+    # noinspection PyAttributeOutsideInit
     def behavior(self, data_urls, timeout=2):
         """Поведение(обработка) полученых из data() URL"""
         global urls, status
@@ -37,8 +42,9 @@ class Crawl(object):
 
         try:
             r = requests.get(self.data_urls, allow_redirects=False, headers=HEADERS, timeout=timeout)
+
+            # check content page (crawl)
             """
-            #check content page (crawl)
             soup1 = bs4.BeautifulSoup(r.content, 'html.parser')
             lxml_xpath = lxml.html.fromstring(r.content)
             description = lxml_xpath.xpath('//meta[@name="description"]/@content')[0]
@@ -46,6 +52,7 @@ class Crawl(object):
             h1 = soup1.find('h1').get_text()
             text = soup1.get_text(strip=False)
             """
+
             # check status code
             urls = r.url
             status = r.status_code
@@ -55,15 +62,17 @@ class Crawl(object):
             dicts = {'status': status, 'url': urls}
             print(dicts)
 
-        except:
+        except Exception as e:
             # dicts = {'status': 'None', 'h1': 'None', 'description': 'None', 'title': 'None', 'url': data_urls,
             #         'text': 'None'}
+            print('Ошибка: %r' % e)
             dicts = {'status': status, 'url': urls}
             print(dicts)
 
         self.csv_writer(dicts)
         return None
 
+    # noinspection PyAttributeOutsideInit
     def csv_writer(self, data):
         self.data = data
         """Запись полученых данных из behavior(data_urls)"""
@@ -76,13 +85,13 @@ class Crawl(object):
             writer.writerow((self.data['status'], self.data['url']))
             f.close()
 
-
-def PoolCrawl(n):
-    M = Crawl()
-    Data = M.data()
-    pool = Pool(n)
-    pool.map(M.behavior, Data)
+    def PoolCrawl(self, n):
+        """Построение событий мультипроцессеринга"""
+        pool = Pool(n)
+        pool.map(self.behavior, self.fetch_urls())
 
 
 if __name__ == "__main__":
-    PoolCrawl(10)
+
+    m = Crawl(str(input("Input sitemap url: ")))
+    m.PoolCrawl(int(input("Input number of threads: ")))
