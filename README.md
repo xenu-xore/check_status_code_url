@@ -2,7 +2,10 @@
 Многопоточный чекинг статуса URL c функционалом crawl page
 
 ## Start
-``` python ./check_sitemap_url.py ```
+``` 
+pip install -r ./requirements.txt
+python ./check_sitemap_url.py 
+```
 
 ## Input url sitemap.xml
 
