@@ -12,11 +12,11 @@ python ./check_sitemap_url.py
 ``` Input sitemap url: https://www.google.com/admob/sitemap.xml ```
 
 ## Input number of threads
-```Input sitemap url: 5 ```
+```Input number of threads: 5 ```
 
 ### Result
 ``` 
     {'status': 302, 'url': 'https://www.google.com/intl/ar_ae/admob/resources.html'}
     {'status': 404, 'url': 'https://www.google.com/intl/es_es/admob/businesskit/growth/'}
-    {'status': 404, 'url': 'https://www.google.com/intl/de_de/admob/businesskit/takeaways/'}
+    {'status': 200, 'url': 'https://www.google.com/intl/de_de/admob/businesskit/takeaways/'}
 ```
